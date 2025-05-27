@@ -1,9 +1,6 @@
-import random
 import colorama
 import os
-import msvcrt
 import sys
-import pyfiglet
 from menu import *
 
 # ascii_magic
