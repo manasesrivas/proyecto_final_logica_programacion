@@ -1,8 +1,7 @@
 import colorama
 import os
 import sys
-from menu import *
-
+import random
 # ascii_magic
 # image_path = "imagen.png"
 # ascii_art = ascii_magic.from_image(imagen_path)
@@ -10,37 +9,49 @@ from menu import *
 
 
 
-def logger_new_ticket(**kwargs):
-    len_name = len(kwargs["nombre"]) < 1 
-    len_dest = len(kwargs["destino"]) < 1
-    if len_name or len_dest:
-        logger_passenger(color_nombre=len_name, color_destino=len_dest)
-    else:
-        save_new_ticket(full_name=kwargs["nombre"], destination_to=kwargs["destino"], passenger_type=DISCOUNT_BASED_ON_TYPE_PASSENGER[index]["header"], ticket_cod=kwargs["codigo_ticket"], price=kwargs["price_ticket"])
-    
-    pass
+
+DIGITS = '1234567890'
+
+
+# genera el codigo del ticket
+def generate_code() -> str:
+    return "".join(random.sample(DIGITS, 4))
+
+# genera un ticket nuevo
+def generate_new_ticket() -> str:
+    code = f'{generate_code()}-{generate_code()}-{generate_code()}'
+    return code
+
+def save_new_ticket(**kwargs):
+    os.system("cls")
+    ticket = [str(item) for item in kwargs.values()]
+    with open("./tickets.txt", "a") as file: 
+        file.write(",".join(ticket))
+
+    tickets[kwargs["codigo"]] = {"nombre": kwargs["nombre"], "destino": kwargs["destino"], "tipo pasajero": DISCOUNT_BASED_ON_TYPE_PASSENGER[kwargs["tipo_pasajero"]]["header"], "precio": kwargs["precio"]}
+
+    print(f'{colorama.Fore.CYAN}se guardó un nuevo pasajero')
+    input("Preciona ENTER para continuar...")
+
+
 
 
 DISCOUNT_BASED_ON_TYPE_PASSENGER = [
     {
         "header":"Infante",
         "price": 1,
-        "func": logger_new_ticket
     },
     {
         "header":"Niño",
         "price": 0.5,
-        "func": logger_new_ticket
     },
     {
         "header": "Adulto",
         "price": 0,
-        "func": logger_new_ticket
     },
     {
         "header": "Adulto mayor",
         "price": 1,
-        "func": logger_new_ticket
     }
 ]
 
@@ -52,11 +63,12 @@ tickets = {}
 
 
 # guarda en el diccionario todos los tickets guardos        
+
 def save_tickets():
     with open("tickets.txt", "r") as file:
         for line in file.readlines():
             line = line.replace('\n', '').split(',')
-            tickets[line[0]] = {"Nombre": line[1], "Destino": line[2], "Tipo pasajero": line[3]}
+            tickets[line[0]] = {"nombre": line[1], "destino": line[2], "tipo pasajero": DISCOUNT_BASED_ON_TYPE_PASSENGER[line[3]]["header"], "precio": line[4]}
 
 
 # print(f'Codigo del ticket generado: {generate_new_ticket()}')
@@ -68,83 +80,89 @@ def integer_to_dollar(integer: float) -> float:
 # save_new_ticket("manases", "santa rosa", "Adulto")
 # print(integer_to_dollar(TICKET_PRICE))
 
-
-def main():
-    colorama.init(autoreset=True)
-    save_tickets()
-    init_menu(menu_list=menu_list, menu_title="sistema de registro de pasajeros")
-
-def logger_passenger(color_nombre = False, color_destino = False):
+def logger_passenger(msg=""):
+    data = {}
     os.system("cls")
-    show_message(colorama.Fore.CYAN, "Registrar nuevo ticket")
-    col = 10
-    codigo_ticket = generate_new_ticket()
-
-    print(f'''+-------------------------------------------+
-|Nombre: { R if color_nombre else B}Nombre{RTS}                             |
-+-------------------------------------------+
-|Destino: { R if color_destino else B}Destino{RTS}                           |
-+-------------------------------------------+
-|Tipo pasajero:                             |
-+-------------------------------------------+
-|codigo ticket: {colorama.Fore.LIGHTYELLOW_EX}{codigo_ticket}{RTS}              |
-+-------------------------------------------+
-|Precio:                                    |
-+-------------------------------------------+
-''')
-    sys.stdout.write(f'\033[{11};{col}H')
-    nombre = input(f'{B}')
+    print(f'{colorama.Fore.RED}{msg}')
+    print(colorama.Fore.CYAN+"Agregar un nuevo pasagero\n")
+    # el try es por si el usuario deja vacio el tipo pasajero
+    try: 
+        data["codigo"] = generate_new_ticket()
+        print(f'{colorama.Fore.YELLOW}{data["codigo"]}')
+        data["nombre"] = input(f'Nombre: {colorama.Fore.MAGENTA}')
+        data["destino"] = input(f'{colorama.Fore.RESET}Destino: {colorama.Fore.MAGENTA}')
+        data["tipo_pasajero"] = int(input(f'{colorama.Fore.RESET}Tipo pasajero [{", ".join([f'{i+1}.{pasajero["header"]}' for i, pasajero in enumerate(DISCOUNT_BASED_ON_TYPE_PASSENGER)])}]: '))-1
+        data["precio"] = integer_to_dollar(DISCOUNT_BASED_ON_TYPE_PASSENGER[data["tipo_pasajero"]-1]["price"] * TICKET_PRICE)
+        print(f'Precio: {colorama.Fore.GREEN}${data["precio"]}')
+    except ValueError:
+        print(f'\n{colorama.Fore.RED}ELIJE UN TIPO DE {colorama.Fore.YELLOW}PASAJERO')
+        input("preciona ENTER para continuar...")
+        logger_passenger()
     
-    sys.stdout.write(f'\033[{13};{11}H')
-    destino = input(f'{B}')
-    index = 1
-    while True:
-        sys.stdout.write(f'\033[{15};{17}H')
-        print(f'{colorama.Fore.LIGHTBLACK_EX}{DISCOUNT_BASED_ON_TYPE_PASSENGER[index-1]["header"]}        ')
-        sys.stdout.write(f'\033[{19};{10}H')
-        price_ticket = integer_to_dollar( TICKET_PRICE-(DISCOUNT_BASED_ON_TYPE_PASSENGER[index-1]["price"]*TICKET_PRICE) )
-        print(f'{colorama.Fore.GREEN}${price_ticket:.2f}')
-        index = listen_key(DISCOUNT_BASED_ON_TYPE_PASSENGER, index, nombre = nombre, index = index-1, codigo_ticket=codigo_ticket, destino=destino, price_ticket=price_ticket)
+        
+    len_name = len(data["nombre"]) < 1 
+    len_dest = len(data["destino"]) < 1
+    if (len_name or len_dest):
+        doYouExit = int(input("quieres salir? [1. si, 2. no] -> "))
+        if doYouExit==1:
+            main()
+        else:
+            logger_passenger("\nFALTAN DATOS\n")
+    else:
+        save_new_ticket(**data)
 
-
-
-
-
-
-def exit_program(): 
-    os.system("cls")
-    show_message(colorama.Fore.LIGHTRED_EX, "Fin del programa")
-    sys.exit(0)
 
 def TODO():
     pass
 
-menu_list = [
-    {
+# funcion para salir del programa
+def exit_program(): 
+    os.system("cls")
+    print(f'{colorama.Fore.RED}Salió del programa')
+    sys.exit(0)
+
+
+# menú principal
+"""
+los diccionarios tambien pueden guardar funciones siempre y cuando 
+se pongan los parentesis de cierre y abierto cuando se llame la clave
+"""
+menu_list = [ # inicio lista
+    { # inicio diccionario
         "header":"Registrar pasajeros con validación.",
-        "func": logger_passenger
-    },
+        "func": logger_passenger # poner la funcion sin los parentesis
+    }, # fin diccionario
     {
         "header":"Buscar por ticket.",
-        "func": TODO
+        "func": TODO # reemplazar por la funcion que pertenece a esta clave (ustedes deben crear)
     },
     {
         "header":"Mostrar listado y totales.",
-        "func": TODO
-    },
-    {
-        "header":"Aplicar descuentos.",
-        "func": TODO
+        "func": TODO # reemplazar por la funcion que pertenece a esta clave (ustedes deben crear)
     },
     {
         "header": "Salir del programa",
         "func": exit_program
     }
-]
+] # fin lista
 
 
 
-index=1
-nombre = ''
+# funcion principal, la cual pinta el menú
+def main():
+    while True:
+        os.system("cls")
+        print(colorama.Fore.BLUE+"\n\nElije el numero de la opcion que quieres\n")
+        for i, opcion in enumerate(menu_list):
+            print(f'[{colorama.Fore.GREEN}{i+1}{colorama.Fore.RESET}] {opcion["header"]}')
+        opcion = input("\nEscribe la opción -> ")
+        if opcion == "": continue
+        try:
+            menu_list[int(opcion)-1]["func"]()
+        except IndexError:
+            print("Numero fuera de lista")
+            input("apreta ENTER para continuar...")
 
+# inicial la libreria colorama que se reinicie el color cada salto de linea
+colorama.init(autoreset=True)
 main()
