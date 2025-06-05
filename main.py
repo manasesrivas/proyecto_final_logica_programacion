@@ -26,7 +26,7 @@ def save_new_ticket(**kwargs):
     os.system("cls")
     ticket = [str(item) for item in kwargs.values()]
     with open("./tickets.txt", "a") as file: 
-        file.write(",".join(ticket))
+        file.write(f"{','.join(ticket)}\n")
 
     tickets[kwargs["codigo"]] = {"nombre": kwargs["nombre"], "destino": kwargs["destino"], "tipo pasajero": DISCOUNT_BASED_ON_TYPE_PASSENGER[kwargs["tipo_pasajero"]]["header"], "precio": kwargs["precio"]}
 
@@ -111,6 +111,39 @@ def logger_passenger(msg=""):
     else:
         save_new_ticket(**data)
 
+# busacr por codigo del ticket
+def search_ticket(file_path="tickets.txt"):
+    os.system("cls")
+    code = input("Ingrese el código del ticket: ").strip()
+    with open(file_path, 'r') as file:
+        for line in file:
+            found = False
+            ticket_code = line.strip().split(",")
+            if ticket_code[0] == code:
+                passenger_type = ticket_code[3]
+                if passenger_type == "1":
+                    passenger_type = "Infante"
+                elif passenger_type == "2":
+                    passenger_type = "Niño"
+                elif passenger_type == "3":
+                    passenger_type = "Adulto"
+                elif passenger_type == "4":
+                    passenger_type = "Adulto mayor"
+                print("+----------------------------------+")
+                print("|        BOLETO DE AUTOBÚS         |")
+                print("+----------------------------------+")
+                print("+----------------------------------+")
+                print(f"| {colorama.Fore.LIGHTGREEN_EX}Código:{colorama.Fore.RESET}          {colorama.Fore.LIGHTBLACK_EX}{ticket_code[0]:<15}{colorama.Fore.RESET} |")
+                print(f"| {colorama.Fore.LIGHTGREEN_EX}Nombre:{colorama.Fore.RESET}          {colorama.Fore.LIGHTMAGENTA_EX}{ticket_code[1]:<15}{colorama.Fore.RESET} |")
+                print(f"| {colorama.Fore.LIGHTGREEN_EX}Destino:{colorama.Fore.RESET}         {colorama.Fore.LIGHTBLUE_EX}{ticket_code[2]:<15}{colorama.Fore.RESET} |")
+                print(f"| {colorama.Fore.LIGHTGREEN_EX}Tipo pasajero:{colorama.Fore.RESET}   {colorama.Fore.LIGHTBLUE_EX}{passenger_type:<15}{colorama.Fore.RESET} |")
+                print(f"| {colorama.Fore.LIGHTGREEN_EX}Precio:{colorama.Fore.RESET}          {colorama.Fore.LIGHTBLUE_EX}${ticket_code[4]:<15}{colorama.Fore.RESET}|")
+                print("+----------------------------------+")
+                found = True
+                break
+    if not found:
+        print("\nTicket no encontrado.")
+    input("\nPresiona ENTER para continuar...")
 
 def TODO():
     pass
@@ -134,7 +167,7 @@ menu_list = [ # inicio lista
     }, # fin diccionario
     {
         "header":"Buscar por ticket.",
-        "func": TODO # reemplazar por la funcion que pertenece a esta clave (ustedes deben crear)
+        "func": search_ticket # reemplazar por la funcion que pertenece a esta clave (ustedes deben crear)
     },
     {
         "header":"Mostrar listado y totales.",
