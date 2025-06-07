@@ -95,21 +95,22 @@ def logger_passenger(msg=""):
         data["precio"] = integer_to_dollar(DISCOUNT_BASED_ON_TYPE_PASSENGER[data["tipo_pasajero"]-1]["price"] * TICKET_PRICE)
         print(f'Precio: {colorama.Fore.GREEN}${data["precio"]}')
     except ValueError:
-        print(f'\n{colorama.Fore.RED}ELIJE UN TIPO DE {colorama.Fore.YELLOW}PASAJERO')
+        len_name = len(data["nombre"]) < 1 
+        len_dest = len(data["destino"]) < 1
+        if (len_name or len_dest):
+            doYouExit = int(input("quieres salir? [1. si, 2. no] -> "))
+            if doYouExit==1:
+                main()
+            else:
+                print(f'\n{colorama.Fore.RED}ELIJE UN TIPO DE {colorama.Fore.YELLOW}PASAJERO')
+                input("preciona ENTER para continuar...")
+                logger_passenger("\nFALTAN DATOS\n")
         input("preciona ENTER para continuar...")
         logger_passenger()
     
         
-    len_name = len(data["nombre"]) < 1 
-    len_dest = len(data["destino"]) < 1
-    if (len_name or len_dest):
-        doYouExit = int(input("quieres salir? [1. si, 2. no] -> "))
-        if doYouExit==1:
-            main()
-        else:
-            logger_passenger("\nFALTAN DATOS\n")
-    else:
-        save_new_ticket(**data)
+
+    save_new_ticket(**data)
 
 # busacr por codigo del ticket
 def search_ticket(file_path="tickets.txt"):
@@ -141,10 +142,13 @@ def mostrar_listado_y_totales(file_path="tickets.txt"):
     os.system("cls")
     try:
         with open(file_path, 'r') as file:
+            total = 0
             for line in file: 
-                user= line .strip().split(",")
-                passenger_type= DISCOUNT_BASED_ON_TYPE_PASSENGER[int(user[3])]["header"]
-                print(f"Codigo{user[0]} | Nombre:{user[1]:<10} | Destino:{user[2]} | Tipo pasajero{user[3]} | Precio:{user[4]}")
+                user = line.strip().split(",")
+                passenger_type = DISCOUNT_BASED_ON_TYPE_PASSENGER[int(user[3])]["header"]
+                print(f"Codigo: {user[0]} | Nombre: {user[1]:<10} | Destino: {user[2]} | Tipo pasajero: {passenger_type} | Precio: ${user[4]}")
+                total += float(user[4])
+            print(f'Precio total: ${total}')
     except FileNotFoundError:
         print("No hay tickets registrados")
     input("\nPresiona ENTER para continuar...")
