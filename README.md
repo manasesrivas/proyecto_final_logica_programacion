@@ -3,10 +3,10 @@
 _funcionalidades_
 - registra tickes
 - sale del programa
+- buscar por ticket
 
 nada mas...
 
 _falta_
 
-- buscar por ticket
 - mostrar listado y totales

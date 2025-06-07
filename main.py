@@ -34,7 +34,7 @@ def save_new_ticket(**kwargs):
     input("Preciona ENTER para continuar...")
 
 
-
+ 
 
 DISCOUNT_BASED_ON_TYPE_PASSENGER = [
     {
@@ -120,15 +120,7 @@ def search_ticket(file_path="tickets.txt"):
             found = False
             ticket_code = line.strip().split(",")
             if ticket_code[0] == code:
-                passenger_type = ticket_code[3]
-                if passenger_type == "1":
-                    passenger_type = "Infante"
-                elif passenger_type == "2":
-                    passenger_type = "Niño"
-                elif passenger_type == "3":
-                    passenger_type = "Adulto"
-                elif passenger_type == "4":
-                    passenger_type = "Adulto mayor"
+                passenger_type = DISCOUNT_BASED_ON_TYPE_PASSENGER[int(ticket_code[3])]["header"]
                 print("+----------------------------------+")
                 print("|        BOLETO DE AUTOBÚS         |")
                 print("+----------------------------------+")
@@ -145,6 +137,19 @@ def search_ticket(file_path="tickets.txt"):
         print("\nTicket no encontrado.")
     input("\nPresiona ENTER para continuar...")
 
+def mostrar_listado_y_totales(file_path="tickets.txt"):
+    os.system("cls")
+    try:
+        with open(file_path, 'r') as file:
+            for line in file: 
+                user= line .strip().split(",")
+                passenger_type= DISCOUNT_BASED_ON_TYPE_PASSENGER[int(user[3])]["header"]
+                print(f"Codigo{user[0]} | Nombre:{user[1]:<10} | Destino:{user[2]} | Tipo pasajero{user[3]} | Precio:{user[4]}")
+    except FileNotFoundError:
+        print("No hay tickets registrados")
+    input("\nPresiona ENTER para continuar...")
+
+    
 def TODO():
     pass
 
@@ -171,7 +176,7 @@ menu_list = [ # inicio lista
     },
     {
         "header":"Mostrar listado y totales.",
-        "func": TODO # reemplazar por la funcion que pertenece a esta clave (ustedes deben crear)
+        "func": mostrar_listado_y_totales # reemplazar por la funcion que pertenece a esta clave (ustedes deben crear)
     },
     {
         "header": "Salir del programa",
@@ -194,7 +199,7 @@ def main():
             menu_list[int(opcion)-1]["func"]()
         except IndexError:
             print("Numero fuera de lista")
-            input("apreta ENTER para continuar...")
+            input("apreta ENTER para continuar...") 
 
 # inicial la libreria colorama que se reinicie el color cada salto de linea
 colorama.init(autoreset=True)
